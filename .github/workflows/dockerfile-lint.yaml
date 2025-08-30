@@ -2,8 +2,8 @@ name: Dockerfile Lint
 
 on:
   push:
-    paths:
-      - Dockerfile
+    tags:
+      - '*'
   pull_request:
     paths:
       - Dockerfile
