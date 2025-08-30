@@ -1,4 +1,6 @@
-FROM php:8.3-apache
+# hadolint global ignore=DL3008
+
+FROM php:8.4-apache
 
 ARG PUID=1000
 ARG PGID=10
@@ -6,7 +8,7 @@ ARG PGID=10
 RUN groupmod -o -g ${PGID} www-data \
     && usermod -o -u ${PUID} -g www-data www-data
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install --no-install-recommends -y \
     libpng-dev \
     libjpeg62-turbo-dev \
     libwebp-dev \
@@ -18,7 +20,9 @@ RUN apt-get update && apt-get install -y \
     libmagickwand-dev \
     unzip \
     git \
-    bzip2
+    bzip2 \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN docker-php-ext-configure gd \
   --with-jpeg \
@@ -29,7 +33,7 @@ RUN pecl install redis && docker-php-ext-enable redis \
     && pecl install memcached && docker-php-ext-enable memcached \
     && pecl install apcu && docker-php-ext-enable apcu
 
-RUN docker-php-ext-install -j$(nproc) \
+RUN docker-php-ext-install -j2 \
   gd \
   exif \
   bz2 \
