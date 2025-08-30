@@ -33,7 +33,7 @@ RUN pecl install redis && docker-php-ext-enable redis \
     && pecl install memcached && docker-php-ext-enable memcached \
     && pecl install apcu && docker-php-ext-enable apcu
 
-RUN docker-php-ext-install -j$(nproc) \
+RUN docker-php-ext-install -j2 \
   gd \
   exif \
   bz2 \
