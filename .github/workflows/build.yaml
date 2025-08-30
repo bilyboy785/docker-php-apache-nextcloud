@@ -26,9 +26,12 @@ jobs:
           password: ${{ secrets.GHCR_TOKEN }}
 
       - name: Build Docker image
-        run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/php-apache-nextcloud:${GITHUB_REF_NAME} .
-          docker tag ${{ secrets.DOCKERHUB_USERNAME }}/php-apache-nextcloud:${GITHUB_REF_NAME} ghcr.io/${{ secrets.GHCR_USERNAME }}/php-apache-nextcloud:${GITHUB_REF_NAME}
+          run: |
+            docker buildx create --use
+            docker buildx build --platform linux/amd64,linux/arm64 \
+              -t ${{ secrets.DOCKERHUB_USERNAME }}/php-apache-nextcloud:${GITHUB_REF_NAME} \
+              -t ghcr.io/${{ secrets.GHCR_USERNAME }}/php-apache-nextcloud:${GITHUB_REF_NAME} \
+              --push .
 
       - name: Push to Docker Hub
         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/php-apache-nextcloud:${GITHUB_REF_NAME}
