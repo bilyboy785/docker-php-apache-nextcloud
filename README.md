@@ -1,1 +1,5 @@
-# docker-php-apache-nextcloud
+# Docker PHP Apache Netfloux
+
+## How to use it
+
+See [Examples](./examples/) for more informations

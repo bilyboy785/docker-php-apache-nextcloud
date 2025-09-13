@@ -1,0 +1,50 @@
+services:
+  nextcloud:
+    container_name: nextcloud
+    image: martinbouillaud/php-apache-nextcloud:php-8.3
+    restart: always
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      memcached:
+        condition: service_started
+    volumes:
+      - ./nextcloud:/var/www/html
+    ports:
+      - 127.0.0.1:8080:80
+
+  mariadb:
+    container_name: mariadb
+    image: mariadb:11.4
+    restart: always
+    environment:
+      MARIADB_USER: nextcloud
+      MARIADB_PASSWORD: Hb0Vd5VVuU160KZDA0ezXoci0iV5YEvg
+      MARIADB_DATABASE: nextcloud
+      MARIADB_ROOT_PASSWORD: rAFA4UvsX102MdfaquTPjGXyJZrO0y3X
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    volumes:
+      - ./mariadb:/var/lib/mysql
+      - ./dump.sql:/docker-entrypoint-initdb.d/dump.sql
+
+  redis:
+    container_name: redis
+    image: redis:latest
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+
+  memcached:
+    container_name: memcached
+    image: memcached:latest
+    restart: always
