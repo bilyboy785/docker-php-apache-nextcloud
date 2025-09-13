@@ -2,11 +2,8 @@ name: Dockerfile Lint
 
 on:
   push:
-    paths:
-      - Dockerfile
-  pull_request:
-    paths:
-      - Dockerfile
+    branches: [ main ]
+    tags: [ 'v*' ]
 
 jobs:
   lint-dockerfile:
