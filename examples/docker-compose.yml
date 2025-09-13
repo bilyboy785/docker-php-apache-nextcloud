@@ -13,7 +13,7 @@ services:
     volumes:
       - ./nextcloud:/var/www/html
     ports:
-      - 127.0.0.1:8080:80
+      - 8080:80
 
   mariadb:
     container_name: mariadb
@@ -21,9 +21,9 @@ services:
     restart: always
     environment:
       MARIADB_USER: nextcloud
-      MARIADB_PASSWORD: Hb0Vd5VVuU160KZDA0ezXoci0iV5YEvg
+      MARIADB_PASSWORD: xxx
       MARIADB_DATABASE: nextcloud
-      MARIADB_ROOT_PASSWORD: rAFA4UvsX102MdfaquTPjGXyJZrO0y3X
+      MARIADB_ROOT_PASSWORD: xxx
     healthcheck:
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       start_period: 10s

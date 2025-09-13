@@ -8,6 +8,16 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        php_tag: [ "8.0", "8.2", "8.3", "8.4" ]
+      
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -24,17 +34,46 @@ jobs:
           registry: ghcr.io
           username: ${{ secrets.GHCR_USERNAME }}
           password: ${{ secrets.GHCR_TOKEN }}
-
-      - name: Build Docker image
+      
+      - name: Define image names
+        id: names
         run: |
-          docker buildx create --use
-          docker buildx build --platform linux/amd64,linux/arm64 \
-            -t ${{ secrets.DOCKERHUB_USERNAME }}/php-apache-nextcloud:${GITHUB_REF_NAME} \
-            -t ghcr.io/${{ secrets.GHCR_USERNAME }}/php-apache-nextcloud:${GITHUB_REF_NAME} \
-            --push .
+          echo "ghcr=ghcr.io/bilyboy785/php-apache-nextcloud" >> $GITHUB_OUTPUT
+          echo "dh=docker.io/martinbouillaud/php-apache-nextcloud" >> $GITHUB_OUTPUT
 
-      - name: Push to Docker Hub
-        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/php-apache-nextcloud:${GITHUB_REF_NAME}
+      - name: Docker metadata (only php-<version> tags)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ steps.names.outputs.ghcr }}
+            ${{ steps.names.outputs.dh }}
+          tags: |
+            type=raw,value=php-${{ matrix.php_tag }}
 
-      - name: Push to GHCR
-        run: docker push ghcr.io/${{ secrets.GHCR_USERNAME }}/php-apache-nextcloud:${GITHUB_REF_NAME}
+      - name: Build & Push (multi-arch)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64,linux/arm64
+          build-args: |
+            PHP_TAG=${{ matrix.php_tag }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # - name: Build Docker image
+      #   run: |
+      #     docker buildx create --use
+      #     docker buildx build --platform linux/amd64,linux/arm64 \
+      #       -t ${{ secrets.DOCKERHUB_USERNAME }}/php-apache-nextcloud:${GITHUB_REF_NAME} \
+      #       -t ghcr.io/${{ secrets.GHCR_USERNAME }}/php-apache-nextcloud:${GITHUB_REF_NAME} \
+      #       --push .
+
+      # - name: Push to Docker Hub
+      #   run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/php-apache-nextcloud:${GITHUB_REF_NAME}
+
+      # - name: Push to GHCR
+      #   run: docker push ghcr.io/${{ secrets.GHCR_USERNAME }}/php-apache-nextcloud:${GITHUB_REF_NAME}
