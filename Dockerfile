@@ -1,3 +1,4 @@
+# hadolint ignore=SC2046,DL3008
 ARG PHP_TAG=8.4
 FROM php:${PHP_TAG}-apache
 
@@ -9,7 +10,7 @@ ENV TZ=Europe/Paris
 RUN groupmod -o -g ${PGID} www-data \
     && usermod -o -u ${PUID} -g www-data www-data
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install --no-install-recommends -y \
     libpng-dev \
     imagemagick \
     libmagickwand-dev \
@@ -25,7 +26,8 @@ RUN apt-get update && apt-get install -y \
     libmagickwand-dev \
     unzip \
     git \
-    bzip2
+    bzip2 && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN docker-php-ext-configure gd \
   --with-jpeg \
